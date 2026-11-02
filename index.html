@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ATS-CCTV Service Hub</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="backdrop" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span><span class="blob b4"></span></div>
+
+<header class="topbar glass">
+  <a class="tb-logo" id="tb-logo" href="#brand" title="ดูโลโก้และอนิเมชั่น"></a>
+  <div class="tb-hub"><b>Service Hub</b>ATS · นาเกลือ ชลบุรี</div>
+  <form class="tb-search" id="tb-search" role="search">
+    <i data-lucide="search"></i>
+    <input id="tb-q" type="search" placeholder="ค้นหาใบงาน, ลูกค้า, อาการ…" aria-label="ค้นหาใบงาน" autocomplete="off">
+    <kbd>Ctrl K</kbd>
+  </form>
+  <span class="tb-spacer"></span>
+  <div class="tb-tools">
+    <a class="btn btn-primary tb-new" href="#new"><i data-lucide="plus"></i><span>แจ้งซ่อมใหม่</span></a>
+    <div class="seg seg-sm skin-seg" id="skin-seg" role="group" aria-label="เลือกสไตล์"></div>
+    <button type="button" class="icon-btn" id="bell" data-act="bell" aria-label="การแจ้งเตือน" aria-expanded="false"><i data-lucide="bell"></i><span class="badge" hidden></span></button>
+    <div class="me"><span class="av av-me">ธ</span><span class="me-text"><b>ธีรวัฒน์</b>ผู้ดูแลระบบ</span></div>
+  </div>
+</header>
+
+<main id="view" class="view" tabindex="-1"></main>
+
+<nav class="rail" id="rail" aria-label="เมนูหลัก">
+  <svg class="rail-svg" aria-hidden="true"><defs><filter id="rail-blur" x="-60%" y="-20%" width="220%" height="140%"><feGaussianBlur stdDeviation="10"/></filter></defs><path class="rail-shadow" filter="url(#rail-blur)" transform="translate(4 12)"/></svg>
+  <div class="rail-bar"></div>
+  <svg class="rail-svg" aria-hidden="true"><path class="rail-stroke"/></svg>
+  <div class="rail-list" id="rail-list"></div>
+  <div class="rail-ball" aria-hidden="true"><div class="ball-inner"></div></div>
+</nav>
+<div class="scrim" id="scrim" data-act="menu-close" hidden></div>
+
+<nav class="dock" id="dock" aria-label="เมนูลัด">
+  <svg class="dock-svg" aria-hidden="true"><defs><filter id="dock-blur" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur stdDeviation="11"/></filter></defs><path class="dock-shadow" filter="url(#dock-blur)" transform="translate(0 12)"/></svg>
+  <div class="dock-bar"></div>
+  <svg class="dock-svg" aria-hidden="true"><path class="dock-stroke"/></svg>
+  <div class="dock-items">
+    <a class="dock-item" href="#overview" data-icon="house"><span class="di-icon"><i data-lucide="house"></i></span><span class="di-label">ภาพรวม</span></a>
+    <a class="dock-item" href="#tickets" data-icon="wrench"><span class="di-icon"><i data-lucide="wrench"></i></span><span class="di-label">ใบแจ้งซ่อม</span></a>
+    <a class="dock-item" href="#new" data-icon="plus"><span class="di-icon"><i data-lucide="plus"></i></span><span class="di-label">แจ้งซ่อม</span></a>
+    <a class="dock-item" href="#pm" data-icon="calendar-check"><span class="di-icon"><i data-lucide="calendar-check"></i></span><span class="di-label">งาน PM</span></a>
+    <button type="button" class="dock-item" data-act="menu" data-icon="layout-grid" aria-label="เมนูทั้งหมด"><span class="di-icon"><i data-lucide="layout-grid"></i></span><span class="di-label">เมนู</span></button>
+  </div>
+  <div class="dock-ball" aria-hidden="true"><div class="ball-inner"></div></div>
+</nav>
+
+<div id="pop-layer"></div>
+<div id="modal-layer"></div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="logo.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

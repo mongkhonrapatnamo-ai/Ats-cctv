@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 64 64">
+  <!-- ats-cctv mark with its loop animations (radar sweep, REC blink, idle look-around). Works in browsers, e.g. as a favicon or <img>. -->
+  <style>
+    .sweep { transform-origin: 32px 32px; animation: sweep 3.6s linear infinite; }
+    .rec { animation: blink 1.6s ease-in-out infinite; }
+    .eye { animation: look 7s ease-in-out infinite; }
+    @keyframes sweep { to { transform: rotate(360deg); } }
+    @keyframes blink { 0%, 55% { opacity: 1; } 65%, 92% { opacity: .22; } 100% { opacity: 1; } }
+    @keyframes look { 0%, 100% { transform: translate(0, 0); } 18%, 34% { transform: translate(-3.2px, .4px); } 52%, 70% { transform: translate(3.2px, -.6px); } 84% { transform: translate(0, -2.6px); } }
+    @media (prefers-reduced-motion: reduce) { .sweep, .rec, .eye { animation: none; } }
+  </style>
+  <defs>
+    <linearGradient id="r" x1="12" y1="10" x2="52" y2="54" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#22D3EE"/><stop offset=".55" stop-color="#3B82F6"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient>
+    <radialGradient id="i" cx="29.5" cy="29.5" r="9" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#C7E0FF"/><stop offset=".5" stop-color="#3B82F6"/><stop offset="1" stop-color="#1E2F7A"/></radialGradient>
+    <linearGradient id="s" x1="32" y1="18" x2="44" y2="25" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#22D3EE" stop-opacity="0"/><stop offset="1" stop-color="#22D3EE" stop-opacity=".55"/></linearGradient>
+    <linearGradient id="b" x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#1A2340"/><stop offset="1" stop-color="#0B1022"/></linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="18" fill="url(#b)"/>
+  <circle cx="32" cy="32" r="15" fill="#070B18"/>
+  <g class="sweep"><path d="M32 32 L32 18 A14 14 0 0 1 44.12 25 Z" fill="url(#s)"/></g>
+  <circle cx="32" cy="32" r="17" fill="none" stroke="url(#r)" stroke-width="4" stroke-linecap="round" pathLength="100" stroke-dasharray="84 16" transform="rotate(-16.2 32 32)"/>
+  <g class="eye"><circle cx="32" cy="32" r="7.5" fill="url(#i)"/><circle cx="32" cy="32" r="3.4" fill="#050814"/><circle cx="29.6" cy="29.4" r="1.5" fill="#FFFFFF"/></g>
+  <circle class="rec" cx="44.02" cy="19.98" r="3.6" fill="#F43F5E"/>
+</svg>
