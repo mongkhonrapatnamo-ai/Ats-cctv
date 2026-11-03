@@ -1332,3 +1332,10 @@ button.cam { border: 0; font: inherit; cursor: pointer; }
 /* website products: picture thumbnails */
 .web-thumb { width: 64px; height: 48px; border-radius: 10px; object-fit: cover; display: grid; place-items: center; background: rgba(255, 255, 255, .06); color: var(--muted); }
 .web-thumb svg { width: 22px; height: 22px; }
+
+/* the signed-in chip opens the account menu */
+button.me { border: 0; background: none; color: inherit; font: inherit; cursor: pointer; border-radius: 999px; padding: 4px 8px 4px 4px; text-align: left; }
+button.me:hover { background: var(--panel-2, rgba(255, 255, 255, .08)); }
+.me-caret { width: 16px; height: 16px; color: var(--muted); }
+a.pop-item { text-decoration: none; color: inherit; }
+@media (max-width: 1180px) { .me-caret { display: none; } button.me { padding: 0; } }

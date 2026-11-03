@@ -129,7 +129,7 @@
   const asset = id => R.assets.find(a => a.id === id);
   const cfg = () => R.config.find(x => x.id === 'settings') || {};
   const slaH = s => (cfg().sla || {})[s] || D.severities[s].sla;
-  const me = () => store.get('me', 'ธีรวัฒน์');
+  const me = () => store.get('me', 'teerawat');
   const isDone = t => t.status === 'เสร็จสิ้น';
   const openTickets = () => R.tickets.filter(t => !isDone(t));
   const contractOf = id => R.contracts.filter(m => m.cust === id && daysLeft(m.end) >= 0).sort((a, b) => a.end.localeCompare(b.end))[0];
@@ -1578,6 +1578,8 @@
   const WEB_ST = { new: ['รอติดต่อกลับ', 't-info'], contacted: ['ติดต่อแล้ว', 't-low'], quoted: ['ส่งใบเสนอราคาแล้ว', 't-high'], won: ['ยืนยันสั่งซื้อ', 't-ok'], lost: ['ไม่ได้สั่ง', 't-crit'], cancelled: ['ยกเลิกแล้ว', 't-low'] };
   const thName = t => (t && typeof t === 'object' ? t.th : t) || '';
   const safeImg = s => (typeof s === 'string' && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(s) ? s : '');
+  // products that came with the website have a picture in the preview (web/media/products), until one is uploaded here
+  const webImg = p => safeImg(p.image) || (D.products.some(x => x.slug === p.slug) ? `${WEB_URL}media/products/${p.slug}.jpg` : '');
   const webOrders = () => { const l = store.get('web.orders', []); return Array.isArray(l) ? l.filter(o => o && o.number) : []; };
   const webProducts = () => {
     const l = store.get('web.products', null);
@@ -1650,7 +1652,7 @@
     return `<div class="page">
     ${pageHead('สินค้าบนเว็บ', 'image', 'สินค้าบนเว็บ', 'เพิ่ม แก้ไข และใส่รูปสินค้าที่แสดงบนหน้าเว็บบริษัท ระบบจริงให้เฉพาะเจ้าของแก้ได้', `<a class="btn" href="${WEB_URL}products/">${icon('external-link')}ดูหน้าเว็บ</a>${actBtn('webprod-new', 'เพิ่มสินค้า', 'plus', 'btn-primary')}`)}
     <section class="card glass"><div class="table-wrap"><table class="tbl" style="min-width:720px"><thead><tr><th></th><th>สินค้า</th><th>หมวด</th><th class="ta-r">ราคา</th><th>บนเว็บ</th><th></th></tr></thead><tbody>
-      ${list.map(p => `<tr><td style="width:84px">${safeImg(p.image) ? `<img class="web-thumb" src="${safeImg(p.image)}" alt="">` : `<span class="web-thumb">${icon(D.types[p.cat]?.icon || 'package')}</span>`}</td>
+      ${list.map(p => `<tr><td style="width:84px">${webImg(p) ? `<img class="web-thumb" src="${esc(webImg(p))}" alt="">` : `<span class="web-thumb">${icon(D.types[p.cat]?.icon || 'package')}</span>`}</td>
         <td><div class="cell-main">${esc(thName(p.name))}</div><div class="cell-sub">${esc(thName(p.desc))}</div></td><td>${D.types[p.cat] ? typeTag(p.cat) : ''}</td>
         <td class="ta-r tabnum"><b>${baht(p.price)}</b>${p.was ? ` <s class="faint">${baht(p.was)}</s>` : ''}</td>
         <td>${p.published !== false ? '<span class="pill t-ok">แสดงอยู่</span>' : '<span class="pill t-low">ซ่อนอยู่</span>'}</td>
@@ -1866,6 +1868,18 @@
   function closePop() {
     $('#pop-layer').innerHTML = '';
     $('#bell').setAttribute('aria-expanded', 'false');
+    $('#me-btn')?.setAttribute('aria-expanded', 'false');
+  }
+  // the signed-in chip: switch to the customer's side of the website preview, or sign out of the demo
+  function openMePop() {
+    const b = $('#me-btn').getBoundingClientRect();
+    $('#pop-layer').innerHTML = `<div class="pop glass" role="menu" aria-label="บัญชีของฉัน" style="top:${Math.round(b.bottom + 10)}px;right:${Math.max(12, Math.round(innerWidth - b.right))}px">
+      <div class="pop-title">${esc(me())}<span class="faint small">เจ้าของระบบ · โหมดทดลอง</span></div>
+      <button class="pop-item" role="menuitem" data-act="demo-as-customer"><span class="chip-icon soft">${icon('user-round')}</span>สลับไปดูแบบลูกค้า</button>
+      <a class="pop-item" role="menuitem" href="${WEB_URL}"><span class="chip-icon soft">${icon('globe')}</span>เปิดหน้าเว็บบริษัท</a>
+      <button class="pop-item" role="menuitem" data-act="demo-sign-out"><span class="chip-icon soft">${icon('log-out')}</span>ออกจากระบบ</button></div>`;
+    $('#me-btn').setAttribute('aria-expanded', 'true');
+    refreshIcons();
   }
   function openPop() {
     const b = $('#bell').getBoundingClientRect(), list = alerts();
@@ -2159,6 +2173,10 @@
     open(el) { location.hash = el.dataset.v.toLowerCase(); },
     go(el) { closePop(); location.hash = el.dataset.v; },
     bell() { $('#pop-layer').innerHTML ? closePop() : openPop(); },
+    me() { $('#pop-layer').innerHTML ? closePop() : openMePop(); },
+    // the website preview reads the demo sign-in from the same browser storage
+    'demo-as-customer'() { store.set('demo.account', { role: 'customer', name: 'ลูกค้าทดลอง' }); location.href = `${WEB_URL}account/`; },
+    'demo-sign-out'() { try { localStorage.removeItem('ats.demo.account'); } catch { /* ignore */ } location.href = `${WEB_URL}login/`; },
     menu() { Rail.drawer(!Rail.isDrawer()); },
     'menu-close'() { Rail.drawer(false); },
     'modal-close'() { Modal.close(); },
@@ -2335,7 +2353,7 @@
   document.addEventListener('click', e => {
     const el = e.target.closest('[data-act]');
     if (!el) { if (!e.target.closest('.pop')) closePop(); return; }
-    if (el.dataset.act !== 'bell' && !el.closest('.pop')) closePop();
+    if (el.dataset.act !== 'bell' && el.dataset.act !== 'me' && !el.closest('.pop')) closePop();
     const run = ACT[el.dataset.act]?.(el, e);
     if (run && run.catch) run.catch(() => render(true));
   });
