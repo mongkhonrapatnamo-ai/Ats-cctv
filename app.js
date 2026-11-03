@@ -242,6 +242,7 @@
     ['งานบริการ', [['tickets', 'ใบแจ้งซ่อม', 'wrench'], ['track', 'ติดตามงาน', 'route'], ['pm', 'งาน PM / ปฏิทินงาน', 'calendar-check'], ['ma', 'สัญญาบริการรายปี (MA)', 'file-text']]],
     ['ทรัพย์สิน & คลัง', [['cameras', 'กล้อง CCTV & อุปกรณ์', 'cctv'], ['assets', 'ทะเบียนทรัพย์สิน', 'server'], ['stock', 'สต็อกอะไหล่ & จัดซื้อ', 'package']]],
     ['ลูกค้า & รายงาน', [['customers', 'ลูกค้า & สาขา', 'building-2'], ['reports', 'รายงาน & KPI', 'chart-column']]],
+    ['เว็บไซต์', [['weborders', 'คำสั่งซื้อจากเว็บ', 'shopping-bag'], ['webproducts', 'สินค้าบนเว็บ', 'image']]],
     ['ระบบ', [['settings', 'ตั้งค่า', 'sliders-horizontal'], ['help', 'ช่วยเหลือ', 'circle-help']]]
   ];
   const NAV_ICON = Object.fromEntries(NAV.flatMap(([, items]) => items.map(([k, , ic]) => [k, ic])));
@@ -1569,6 +1570,95 @@
         <div class="btn-row"><button type="button" class="btn btn-sm" data-act="cust-tickets" data-v="${c.id}">${icon('clipboard-list')}ดูใบงาน</button><button type="button" class="btn btn-sm" data-act="cust-new" data-v="${c.id}">${icon('plus')}แจ้งซ่อม</button></div></article>`;
     }).join('')}</div>`;
   }
+  // ---------- the website's orders and products ----------
+  // The website preview next to this prototype (Ats-cctv/web/ on GitHub Pages) runs in demo mode: it saves the
+  // orders customers try in "ats.web.orders" and shows the products kept here in "ats.web.products". Both stay in
+  // this browser only. In the real system they live in the database, and only the owner edits products.
+  const WEB_URL = 'web/';
+  const WEB_ST = { new: ['รอติดต่อกลับ', 't-info'], contacted: ['ติดต่อแล้ว', 't-low'], quoted: ['ส่งใบเสนอราคาแล้ว', 't-high'], won: ['ยืนยันสั่งซื้อ', 't-ok'], lost: ['ไม่ได้สั่ง', 't-crit'], cancelled: ['ยกเลิกแล้ว', 't-low'] };
+  const thName = t => (t && typeof t === 'object' ? t.th : t) || '';
+  const safeImg = s => (typeof s === 'string' && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(s) ? s : '');
+  const webOrders = () => { const l = store.get('web.orders', []); return Array.isArray(l) ? l.filter(o => o && o.number) : []; };
+  const webProducts = () => {
+    const l = store.get('web.products', null);
+    if (Array.isArray(l)) return l.filter(p => p && p.slug && p.name);
+    return D.products.map(p => ({ slug: p.slug, cat: p.cat, name: { th: p.name }, desc: { th: p.desc }, price: p.price ?? null, was: p.was ?? null, image: null, published: true }));
+  };
+  // pictures are shrunk to 640 px so a few dozen fit in the browser's storage
+  async function shrinkImage(file) {
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size > 15 * 1024 * 1024) throw new Error('image');
+    const bmp = await createImageBitmap(file);
+    const k = Math.min(1, 640 / Math.max(bmp.width, bmp.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    bmp.close();
+    return c.toDataURL('image/jpeg', 0.8);
+  }
+  function saveWebProducts(list) {
+    try { localStorage.setItem('ats.web.products', JSON.stringify(list)); return true; }
+    catch { toast('ที่เก็บรูปในเครื่องนี้เต็ม ลองใช้รูปเล็กลง หรือลบสินค้าบางรายการ', 'triangle-alert'); return false; }
+  }
+  function webProductModal(p) {
+    const e = p || { cat: 'cctv', name: { th: '' }, desc: { th: '' }, price: null, was: null, image: null, published: true };
+    Modal.open({
+      title: p ? 'แก้ไขสินค้าบนเว็บ' : 'เพิ่มสินค้าบนเว็บ', sub: 'โหมดทดลอง: บันทึกไว้ในเครื่องนี้ หน้าเว็บในเครื่องนี้เห็นทันที',
+      body: `<div class="fgrid">${mfield('cat', 'หมวด', msel('cat', Object.entries(D.types).map(([k, t]) => [k, t.label]), e.cat))}
+        ${mfield('price', 'ราคา (บาท)', mi('price', e.price ?? '', 'type="number" min="0" placeholder="เว้นว่าง = สอบถามราคา"'))}
+        ${mfield('name', 'ชื่อสินค้า', mi('name', thName(e.name)), { req: true, full: true, err: 'กรอกชื่อสินค้า' })}
+        ${mfield('desc', 'รายละเอียด', mi('desc', thName(e.desc)), { full: true })}
+        ${mfield('was', 'ราคาก่อนลด (ไม่บังคับ)', mi('was', e.was ?? '', 'type="number" min="0"'), { err: 'ต้องมากกว่าราคาขาย' })}
+        ${mfield('image', 'รูปสินค้า', '<input id="m-image" name="image" type="file" accept="image/jpeg,image/png,image/webp">', { hint: safeImg(e.image) ? 'มีรูปแล้ว เลือกใหม่เพื่อเปลี่ยน' : 'JPG, PNG หรือ WebP ระบบย่อรูปให้เอง', err: 'ใช้รูป JPG, PNG หรือ WebP ไม่เกิน 15 MB' })}
+        <label class="consent inner full"><input type="checkbox" name="published"${e.published !== false ? ' checked' : ''}><span>แสดงบนหน้าเว็บ</span></label></div>`,
+      extra: p ? `<button type="button" class="btn btn-ghost danger-text" data-act="webprod-del" data-v="${esc(p.slug)}">${icon('trash-2')}ลบ</button>` : '',
+      onSubmit: async d => {
+        const name = (d.name || '').trim();
+        if (!name) return 'name';
+        const price = d.price === '' ? null : +d.price, was = d.was === '' ? null : +d.was;
+        if (was != null && (price == null || was <= price)) return 'was';
+        let image = safeImg(e.image) || null;
+        if (d.image && d.image.size) { try { image = await shrinkImage(d.image); } catch { return 'image'; } }
+        const row = { slug: p ? p.slug : `${d.cat}-${Math.random().toString(16).slice(2, 10)}`, cat: d.cat, name: { th: name }, desc: { th: (d.desc || '').trim() }, price, was, image, published: d.published === 'on' };
+        const list = webProducts(), i = list.findIndex(x => x.slug === row.slug);
+        if (i >= 0) list[i] = row; else list.push(row);
+        if (!saveWebProducts(list)) return 'image';
+        toast(p ? 'บันทึกสินค้าแล้ว' : 'เพิ่มสินค้าแล้ว', 'image');
+      }
+    });
+  }
+  VIEWS.weborders = () => {
+    const list = webOrders(), n = (...s) => list.filter(o => s.includes(o.status)).length;
+    const rows = list.map(o => `<tr><td class="wo">${esc(o.number)}</td>
+      <td><div class="cell-main">${esc(o.contact_name)}</div><div class="cell-sub"><a href="tel:${esc(String(o.contact_phone).replace(/[^\d+]/g, ''))}">${esc(o.contact_phone)}</a>${o.area ? ` · ${esc(o.area)}` : ''}</div></td>
+      <td><div class="cell-main">${esc(thName(o.item_name))}</div>${o.note ? `<div class="cell-sub">${esc(o.note)}</div>` : ''}</td>
+      <td class="ta-r tabnum">${+o.qty || 1}</td><td class="ta-r tabnum">${o.unit_price == null ? 'สอบถาม' : `${fmt(o.unit_price * (+o.qty || 1))} ฿`}</td><td class="tabnum">${dateTH(Date.parse(o.created_at))}</td>
+      <td><select class="inline-sel" data-weborder="${esc(o.id)}" aria-label="สถานะคำสั่งซื้อ ${esc(o.number)}">${Object.entries(WEB_ST).map(([k, [l]]) => `<option value="${k}"${k === o.status ? ' selected' : ''}>${l}</option>`).join('')}</select></td>
+      <td><button type="button" class="btn btn-sm btn-ghost" data-act="quote-from" data-v="${esc(thName(o.item_name) + (o.qty > 1 ? ` × ${o.qty}` : ''))}" data-amt="${(o.unit_price || 0) * (+o.qty || 1)}">${icon('receipt')}ใส่ใบเสนอราคา</button></td></tr>`).join('');
+    return `<div class="page">
+    ${pageHead('คำสั่งซื้อจากเว็บ', 'shopping-bag', 'คำสั่งซื้อจากเว็บ', 'คำขอที่ลูกค้าส่งจากหน้าเว็บบริษัท โทรกลับ แล้วเปลี่ยนสถานะที่นี่', `<a class="btn" href="${WEB_URL}products/">${icon('external-link')}เปิดหน้าเว็บ</a>`)}
+    <section class="stat-row">
+      ${mini('รอติดต่อกลับ', n('new'), 'ยังไม่ได้โทร')}${mini('กำลังดำเนินการ', n('contacted', 'quoted'), 'ติดต่อแล้ว / ส่งใบเสนอราคา')}${mini('ยืนยันสั่งซื้อ', n('won'), 'ปิดการขายได้')}${mini('ทั้งหมด', list.length, 'คำขอจากหน้าเว็บ')}
+    </section>
+    <section class="card glass">${list.length
+      ? `<div class="table-wrap"><table class="tbl" style="min-width:880px"><thead><tr><th>เลขที่</th><th>ลูกค้า</th><th>สินค้า</th><th class="ta-r">จำนวน</th><th class="ta-r">มูลค่า</th><th>วันที่</th><th>สถานะ</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+        <p class="hint">โหมดทดลอง: คำสั่งซื้อเหล่านี้มาจากหน้าเว็บในเครื่องนี้เท่านั้น ระบบจริงเก็บในฐานข้อมูล</p>`
+      : emptyBox('shopping-bag', 'ยังไม่มีคำสั่งซื้อจากเว็บ', 'เปิดหน้าเว็บ ลองเป็นลูกค้า กดสั่งซื้อสินค้า แล้วกลับมาดูที่นี่', `<a class="btn btn-primary" href="${WEB_URL}products/">${icon('external-link')}ไปหน้าสินค้า</a>`)}</section>
+    </div>`;
+  };
+  VIEWS.webproducts = () => {
+    const list = webProducts();
+    return `<div class="page">
+    ${pageHead('สินค้าบนเว็บ', 'image', 'สินค้าบนเว็บ', 'เพิ่ม แก้ไข และใส่รูปสินค้าที่แสดงบนหน้าเว็บบริษัท ระบบจริงให้เฉพาะเจ้าของแก้ได้', `<a class="btn" href="${WEB_URL}products/">${icon('external-link')}ดูหน้าเว็บ</a>${actBtn('webprod-new', 'เพิ่มสินค้า', 'plus', 'btn-primary')}`)}
+    <section class="card glass"><div class="table-wrap"><table class="tbl" style="min-width:720px"><thead><tr><th></th><th>สินค้า</th><th>หมวด</th><th class="ta-r">ราคา</th><th>บนเว็บ</th><th></th></tr></thead><tbody>
+      ${list.map(p => `<tr><td style="width:84px">${safeImg(p.image) ? `<img class="web-thumb" src="${safeImg(p.image)}" alt="">` : `<span class="web-thumb">${icon(D.types[p.cat]?.icon || 'package')}</span>`}</td>
+        <td><div class="cell-main">${esc(thName(p.name))}</div><div class="cell-sub">${esc(thName(p.desc))}</div></td><td>${D.types[p.cat] ? typeTag(p.cat) : ''}</td>
+        <td class="ta-r tabnum"><b>${baht(p.price)}</b>${p.was ? ` <s class="faint">${baht(p.was)}</s>` : ''}</td>
+        <td>${p.published !== false ? '<span class="pill t-ok">แสดงอยู่</span>' : '<span class="pill t-low">ซ่อนอยู่</span>'}</td>
+        <td>${actBtn('webprod-edit', 'แก้ไข', 'pencil', 'btn-sm btn-ghost', p.slug)}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="hint">โหมดทดลอง: รายการและรูปเก็บในเครื่องนี้เท่านั้น ลูกค้าคนอื่นยังไม่เห็น</p></section>
+    </div>`;
+  };
   VIEWS.customers = () => {
     const waiting = R.quotes.filter(q => q.status === 'รอลูกค้าอนุมัติ' || q.status === 'ส่งให้ลูกค้าแล้ว');
     const s = stats(firstOfMonth());
@@ -1708,7 +1798,7 @@
   AFTER.brand = () => { L.replay($('#brand-logo .logo')); };
 
   // ---------- router ----------
-  const ROUTES = ['overview', 'command', 'tv', 'tickets', 'new', 'track', 'pm', 'ma', 'cameras', 'assets', 'stock', 'customers', 'reports', 'settings', 'help', 'brand'];
+  const ROUTES = ['overview', 'command', 'tv', 'tickets', 'new', 'track', 'pm', 'ma', 'cameras', 'assets', 'stock', 'customers', 'weborders', 'webproducts', 'reports', 'settings', 'help', 'brand'];
   const DOCK_OF = { overview: 0, tickets: 1, detail: 1, new: 2, pm: 3 };
   function parse() {
     const h = decodeURIComponent(location.hash.slice(1)).toLowerCase();
@@ -2214,6 +2304,13 @@
     },
     'quote-add'() { quoteModal(); },
     'quote-from'(b) { quoteModal({ title: b.dataset.v, amount: +b.dataset.amt || '' }); },
+    'webprod-new'() { webProductModal(null); },
+    'webprod-edit'(b) { const p = webProducts().find(x => x.slug === b.dataset.v); if (p) webProductModal(p); },
+    'webprod-del'(b) {
+      const list = webProducts(), p = list.find(x => x.slug === b.dataset.v);
+      Modal.close();
+      if (p) confirmBox('ลบสินค้า', `ลบ "${esc(thName(p.name))}" ออกจากหน้าเว็บ?`, 'ลบ', async () => { if (saveWebProducts(list.filter(x => x !== p))) toast('ลบสินค้าแล้ว', 'trash-2'); });
+    },
     'quote-del'(b) { const id = b.dataset.v; confirmBox(`ลบ ${id}`, 'ลบแล้วจะกู้คืนไม่ได้', 'ลบ', async () => { await Store.del('quotes', id); }); },
     // settings
     'tech-add'() { techModal(); },
@@ -2296,6 +2393,13 @@
         el.blur();
         updTicket(t, { tech: el.value || null, status: k && t.status === 'รอมอบหมาย' ? 'รอนัดหมาย' : !k && D.statuses[t.status].group === 'pending' ? 'รอมอบหมาย' : t.status }, logLine('', k ? `มอบหมายช่าง${k.name}` : 'ยกเลิกการมอบหมายช่าง')).catch(() => render(true));
       }
+      return;
+    }
+    if (el.dataset.weborder) {
+      if (!change) return;
+      const list = webOrders(), o = list.find(x => x.id === el.dataset.weborder);
+      el.blur();
+      if (o) { o.status = el.value; store.set('web.orders', list); toast(`${o.number} · ${WEB_ST[el.value][0]}`, 'shopping-bag'); render(true); }
       return;
     }
     if (el.dataset.qt) {

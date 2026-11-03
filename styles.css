@@ -1328,3 +1328,7 @@ button.cam { border: 0; font: inherit; cursor: pointer; }
   .stage-labels { font-size: 10px; }
 }
 @keyframes sheet-in { from { transform: translateY(40px); opacity: 0; } }
+
+/* website products: picture thumbnails */
+.web-thumb { width: 64px; height: 48px; border-radius: 10px; object-fit: cover; display: grid; place-items: center; background: rgba(255, 255, 255, .06); color: var(--muted); }
+.web-thumb svg { width: 22px; height: 22px; }

@@ -85,18 +85,18 @@ window.ATS_DATA = {
   },
   // products on sale on the website; was = price before the promotion
   products: [
-    { cat: 'ac',     name: 'บริการติดตั้งแอร์',            desc: 'แอร์ขนาด 9,000 – 18,000 BTU',                       price: 3800,  was: 4500 },
-    { cat: 'ac',     name: 'Daikin Inverter 12000 BTU',    desc: 'อินเวอร์เตอร์ประหยัดไฟเบอร์ 5 พร้อมติดตั้ง',          price: 22900, was: 25900 },
-    { cat: 'ac',     name: 'Mitsubishi Heavy 18000 BTU',   desc: 'Heavy Duty ทนร้อน ทนฝุ่น เหมาะกับโรงงาน',             price: 38500 },
-    { cat: 'cctv',   name: 'Hikvision 4K 8CH NVR Kit',     desc: 'ชุดกล้อง 4K NVR 8 ช่อง พร้อม HDD 2TB ติดตั้งฟรี',      price: 16500, was: 18900 },
-    { cat: 'cctv',   name: 'Dahua IP Camera 5MP',          desc: 'รองรับ ONVIF ดูภาพผ่านมือถือได้ 24 ชม.',               price: 4500 },
-    { cat: 'cctv',   name: 'ติดตั้งกล้องวงจรปิด (ต่อจุด)',  desc: 'รวมค่าแรง + อุปกรณ์เดินสาย',                          price: 1500 },
-    { cat: 'pc',     name: 'Custom Gaming PC RTX 4070',    desc: 'CPU i9 · RAM 32GB · SSD 1TB · RTX 4070',             price: 59900, was: 65000 },
-    { cat: 'pc',     name: 'Dell Inspiron 15 Core i5',     desc: '15.6 นิ้ว Core i5 Gen13 · RAM 16GB · SSD 512GB',       price: 28900 },
-    { cat: 'net',    name: 'Ubiquiti UniFi AP Pro',        desc: 'Access Point WiFi 6 ครอบคลุม 200 ตร.ม.',               price: 7500 },
-    { cat: 'net',    name: 'MikroTik RB450Gx4 Router',     desc: 'Router Enterprise รองรับ BGP, OSPF, VPN',              price: 5500,  was: 6200 },
-    { cat: 'access', name: 'Xiaomi Smart Gateway Hub',     desc: 'ศูนย์กลาง Smart Home รองรับ Zigbee / BLE',             price: 2500,  was: 2990 },
-    { cat: 'access', name: 'Yale Smart Lock YDM3109',      desc: 'ลายนิ้วมือ + PIN + แอป · กันน้ำ IP55',                 price: 8900 },
-    { cat: 'ac',     name: 'ซ่อม / ล้างแอร์ พร้อมน้ำยา',     desc: 'ล้างแอร์ เติมน้ำยา ตรวจเช็กระบบ พร้อมใบรับประกัน',      price: 600,   was: 800 }
+    { slug: 'air-conditioner-installation-1', cat: 'ac',     name: 'บริการติดตั้งแอร์',            desc: 'แอร์ขนาด 9,000 – 18,000 BTU',                       price: 3800,  was: 4500 },
+    { slug: 'daikin-inverter-12000-btu-2', cat: 'ac',     name: 'Daikin Inverter 12000 BTU',    desc: 'อินเวอร์เตอร์ประหยัดไฟเบอร์ 5 พร้อมติดตั้ง',          price: 22900, was: 25900 },
+    { slug: 'mitsubishi-heavy-18000-btu-3', cat: 'ac',     name: 'Mitsubishi Heavy 18000 BTU',   desc: 'Heavy Duty ทนร้อน ทนฝุ่น เหมาะกับโรงงาน',             price: 38500 },
+    { slug: 'hikvision-4k-8ch-nvr-kit-4', cat: 'cctv',   name: 'Hikvision 4K 8CH NVR Kit',     desc: 'ชุดกล้อง 4K NVR 8 ช่อง พร้อม HDD 2TB ติดตั้งฟรี',      price: 16500, was: 18900 },
+    { slug: 'dahua-ip-camera-5mp-5', cat: 'cctv',   name: 'Dahua IP Camera 5MP',          desc: 'รองรับ ONVIF ดูภาพผ่านมือถือได้ 24 ชม.',               price: 4500 },
+    { slug: 'cctv-installation-per-point-6', cat: 'cctv',   name: 'ติดตั้งกล้องวงจรปิด (ต่อจุด)',  desc: 'รวมค่าแรง + อุปกรณ์เดินสาย',                          price: 1500 },
+    { slug: 'custom-gaming-pc-rtx-4070-7', cat: 'pc',     name: 'Custom Gaming PC RTX 4070',    desc: 'CPU i9 · RAM 32GB · SSD 1TB · RTX 4070',             price: 59900, was: 65000 },
+    { slug: 'dell-inspiron-15-core-i5-8', cat: 'pc',     name: 'Dell Inspiron 15 Core i5',     desc: '15.6 นิ้ว Core i5 Gen13 · RAM 16GB · SSD 512GB',       price: 28900 },
+    { slug: 'ubiquiti-unifi-ap-pro-9', cat: 'net',    name: 'Ubiquiti UniFi AP Pro',        desc: 'Access Point WiFi 6 ครอบคลุม 200 ตร.ม.',               price: 7500 },
+    { slug: 'mikrotik-rb450gx4-router-10', cat: 'net',    name: 'MikroTik RB450Gx4 Router',     desc: 'Router Enterprise รองรับ BGP, OSPF, VPN',              price: 5500,  was: 6200 },
+    { slug: 'xiaomi-smart-gateway-hub-11', cat: 'access', name: 'Xiaomi Smart Gateway Hub',     desc: 'ศูนย์กลาง Smart Home รองรับ Zigbee / BLE',             price: 2500,  was: 2990 },
+    { slug: 'yale-smart-lock-ydm3109-12', cat: 'access', name: 'Yale Smart Lock YDM3109',      desc: 'ลายนิ้วมือ + PIN + แอป · กันน้ำ IP55',                 price: 8900 },
+    { slug: 'ac-repair-cleaning-with-refrigerant-13', cat: 'ac',     name: 'ซ่อม / ล้างแอร์ พร้อมน้ำยา',     desc: 'ล้างแอร์ เติมน้ำยา ตรวจเช็กระบบ พร้อมใบรับประกัน',      price: 600,   was: 800 }
   ]
 };
